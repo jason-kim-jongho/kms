@@ -60,6 +60,28 @@ body {
 .badge-blocked, .badge-at_risk, .badge-delayed { background: #fee2e2; color: #b91c1c; }
 .badge-approved, .badge-reviewed, .badge-testing, .badge-design { background: #ede9fe; color: #6d28d9; }
 
+.badge-linked, .badge-active { background: #dcfce7; color: #15803d; }
+.badge-missing, .badge-revoked { background: #fee2e2; color: #b91c1c; }
+.badge-pending_review, .badge-expired { background: #fef9c3; color: #a16207; }
+
+.doc-drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  transition: all 0.15s ease;
+}
+.doc-drop-zone.drag-over {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.doc-card {
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.doc-card:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: 0.75rem;

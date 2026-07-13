@@ -12,6 +12,12 @@
       "database_name": "webapp-production",
       "database_id": "local-dev-placeholder-id"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DOC_BUCKET",
+      "bucket_name": "webapp-documents"
+    }
   ]
   // "vars": {
   //   "MY_VAR": "my-variable"
@@ -20,12 +26,6 @@
   //   {
   //     "binding": "MY_KV_NAMESPACE",
   //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
   //   }
   // ],
   // "ai": {
