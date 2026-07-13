@@ -1,5 +1,10 @@
 # SAP B1 - Teedy 문서관리 통합 프로젝트 대시보드
 
+> 📌 **참고**: 이 저장소에는 아래 두 가지 버전의 동일한 솔루션이 함께 들어 있습니다.
+> 1. **본 문서(Cloudflare Pages 버전)** — Hono + TypeScript + Cloudflare D1/R2 (서버리스)
+> 2. **`si-solution/` 디렉터리 (온프레미스 SI 버전)** — Spring Boot 3.5 + Java 21 + PostgreSQL 17 + Vue.js 3
+>    (일반 SI/사내 서버 구축 방식을 원하는 경우 이 버전을 사용하세요. 상세 가이드는 [`si-solution/README.md`](./si-solution/README.md) 참고)
+
 ## 프로젝트 개요
 - **이름**: SAP B1 연계 문서관리(DMS) 통합 프로젝트
 - **목표**: SAP Business One의 전자문서(세금계산서/발주서/계약서 등)를 문서관리 시스템과 연동하여 UNC 경로 기반 파일을 커스텀 메타데이터(File No.)로 색인하고, 누락 문서 자동 탐지 및 접근권한(ACL) 체계를 구축. 실제 SAP B1 연계 SCM 솔루션(`scm_solution`) 코드베이스를 분석하여 파일 스토리지/SAP Service Layer/인증서관리 패턴을 반영한 **문서관리(DMS) 모듈**을 추가 구현
