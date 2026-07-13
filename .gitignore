@@ -31,3 +31,10 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# si-solution (Spring Boot + Vue.js SI project)
+si-solution/kms-backend/target/
+si-solution/kms-storage/*
+!si-solution/kms-storage/.gitkeep
+si-solution/kms-frontend/node_modules/
+si-solution/kms-frontend/dist/
