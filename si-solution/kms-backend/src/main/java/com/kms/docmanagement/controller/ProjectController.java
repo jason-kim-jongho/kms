@@ -25,6 +25,11 @@ public class ProjectController {
         return ApiResponse.ok(projectRepository.findById(id).orElseThrow());
     }
 
+    @PostMapping
+    public ApiResponse<Project> create(@RequestBody Project payload) {
+        return ApiResponse.ok(projectRepository.save(payload));
+    }
+
     @PutMapping("/{id}")
     public ApiResponse<Project> update(@PathVariable Long id, @RequestBody Project payload) {
         Project p = projectRepository.findById(id).orElseThrow();
@@ -33,6 +38,17 @@ public class ProjectController {
         p.setStartDate(payload.getStartDate());
         p.setEndDate(payload.getEndDate());
         p.setStatus(payload.getStatus());
+        p.setPriority(payload.getPriority());
+        p.setOwner(payload.getOwner());
+        p.setTargetDate(payload.getTargetDate());
+        p.setProgressPct(payload.getProgressPct());
+        p.setAiStatusSummary(payload.getAiStatusSummary());
         return ApiResponse.ok(projectRepository.save(p));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        projectRepository.deleteById(id);
+        return ApiResponse.ok(null);
     }
 }

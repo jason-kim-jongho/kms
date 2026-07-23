@@ -12,6 +12,37 @@
   3. SAP B1 ↔ KMS 메타데이터 매핑 관리
   4. 문서유형별 권한(ACL) 설계 관리
   5. 문서관리시스템(DMS): 문서 등록/파일 업로드·다운로드/SAP 전표 연계/인증서 관리
+  6. **PMS(다중 뷰 프로젝트관리, `/pms/*`)**: Notion/Airtable 스타일의 테이블/칸반/갤러리/캘린더/리스트
+     5가지 뷰를 전환하며 8개 테이블(projects, milestones, tasks, dev_modules,
+     sap_teedy_mapping, acl_design, risks, case_studies)을 관리하는 통합 데이터베이스 UI
+
+## PMS (다중 뷰 프로젝트관리) 상세
+
+업로드된 참조 이미지(Notion/Airtable 스타일 "Teedy 도입 통합 대시보드")를 분석하여
+동일한 UX 패턴으로 구현한 신규 모듈입니다. 라우트는 `/pms` (→ `/pms/projects`로 리다이렉트)와
+`/pms/:table` (table = projects|milestones|tasks|dev_modules|sap_teedy_mapping|acl_design|risks|case_studies) 입니다.
+
+### 뷰 종류
+| 뷰 | 설명 |
+|---|---|
+| 테이블/그리드 | 모든 필드를 컬럼으로 표시하는 스프레드시트 형태 |
+| 칸반보드 | `statusField` 기준으로 컬럼 그룹핑, 카드 형태, 상태별 "+카드 추가" |
+| 갤러리 | 4열 카드 그리드, status/priority 뱃지 표시 |
+| 캘린더 | `dateField` 기준 월간 캘린더에 이벤트 표시 (dayjs 기반) |
+| 리스트 | linked_record(연결된 레코드) 컬럼을 파란 링크로 표시, status/날짜 우선 노출 |
+
+### 신규 테이블(백엔드)
+- **risks**: 프로젝트 리스크 관리 (category/severity/probability/status/owner/dueDate/mitigation)
+- **case_studies**: 도입 사례/성과 관리 (category/summary/outcome/status/owner/publishedDate)
+- 기존 **projects**, **milestones** 테이블에 `priority`, `owner`, `target_date`, `progress_pct`,
+  `ai_status_summary`(projects) / `name`, `target_date`, `notes`(milestones) 컬럼을 V7 마이그레이션으로 추가
+
+### 프론트엔드 구조 (`kms-frontend/src/pms/`)
+- `tableMeta.js`: 8개 테이블의 필드 스키마(타입/옵션/linkedTable) 선언적 레지스트리
+- `usePmsData.js` / `usePmsFilter.js`: 전역 reactive 캐시 + 검색/필터/정렬 composable
+- `components/views/*.vue`: TableGridView, KanbanBoardView, GalleryView, CalendarView, ListView
+- `components/RecordFormModal.vue`, `PmsToolbar.vue`: 동적 레코드 생성/편집 모달, 필터/정렬/그룹/검색 툴바
+- `PmsView.vue`: 좌측 테이블 목록 사이드바 + 상단 뷰 전환 탭 + 메인 컨테이너
 
 ## 기술 스택 (Cloudflare 버전과의 대응 관계)
 
@@ -160,6 +191,9 @@ pm2 list
 | SAP연계 | `GET /api/sap-links` | 전체 연계 목록 |
 | SAP조회 | `GET /api/sap/lookup?table=&doc_num=` | SAP B1 Service Layer Mock 조회 |
 | 인증서 | `GET/POST/DELETE /api/certifications[/{id}]` | 인증서 등록/조회/폐기 (`?partnerCode=`) |
+| 리스크(PMS) | `GET/POST/PUT/DELETE /api/risks[/{id}]` | 프로젝트 리스크 CRUD |
+| 사례(PMS) | `GET/POST/PUT/DELETE /api/case-studies[/{id}]` | 도입 사례/성과 CRUD |
+| 프로젝트(PMS 확장) | `POST/DELETE /api/projects[/{id}]` | 프로젝트 생성/삭제 (기존 GET/PUT에 추가) |
 
 ## SAP B1 연동 지점 (운영 전환 시 필수 작업)
 `SapLookupController.lookup()` 메서드는 현재 **Mock 데이터**를 반환합니다.
@@ -184,8 +218,9 @@ pm2 list
 - 파일 저장소를 NAS/공유폴더(UNC 경로) 또는 별도 파일서버로 이전 (현재는 로컬 디스크)
 - 감사로그(document_access_logs) 조회 API 및 화면 추가
 
-## 최종 검증 상태 (2026-07-13 기준)
-- Flyway 마이그레이션 V1~V6 전체 적용 완료
-- REST API 전체 엔드포인트 curl 검증 완료 (CRUD, 파일 업로드/다운로드 포함)
-- Vue.js 프론트엔드 9개 화면 Playwright 콘솔 검증 완료 (JS 에러 없음)
+## 최종 검증 상태 (2026-07-23 기준)
+- Flyway 마이그레이션 V1~V7 전체 적용 완료 (V7: PMS용 projects/milestones 컬럼 보강 + risks/case_studies 신규)
+- REST API 전체 엔드포인트 curl 검증 완료 (CRUD, 파일 업로드/다운로드, risks/case-studies 포함)
+- Vue.js 프론트엔드 9개 기존 화면 + PMS 모듈(`/pms/*`) Playwright 콘솔 검증 완료 (JS 에러 없음)
+- PMS 5가지 뷰(테이블/칸반/갤러리/캘린더/리스트) 전환 Playwright 스크린샷 시각 검증 완료
 - 프론트-백엔드 CORS 연동 검증 완료

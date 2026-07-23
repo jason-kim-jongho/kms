@@ -17,6 +17,19 @@ const navGroups = [
     ]
   },
   {
+    title: 'PMS (다중 뷰)',
+    items: [
+      { path: '/pms/projects', label: 'projects', icon: 'fa-diagram-project' },
+      { path: '/pms/milestones', label: 'milestones', icon: 'fa-flag-checkered' },
+      { path: '/pms/tasks', label: 'tasks', icon: 'fa-list-check' },
+      { path: '/pms/dev_modules', label: 'dev_modules', icon: 'fa-cubes' },
+      { path: '/pms/sap_teedy_mapping', label: 'sap_teedy_mapping', icon: 'fa-link' },
+      { path: '/pms/acl_design', label: 'acl_design', icon: 'fa-shield-halved' },
+      { path: '/pms/risks', label: 'risks', icon: 'fa-triangle-exclamation' },
+      { path: '/pms/case_studies', label: 'case_studies', icon: 'fa-book-open' }
+    ]
+  },
+  {
     title: '문서관리(DMS)',
     items: [
       { path: '/documents', label: '문서 목록', icon: 'fa-folder-open' },

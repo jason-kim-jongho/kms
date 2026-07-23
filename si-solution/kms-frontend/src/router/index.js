@@ -12,6 +12,16 @@ const routes = [
     meta: { title: '통합 대시보드', icon: 'fa-gauge-high' }
   },
   {
+    path: '/pms',
+    redirect: '/pms/projects'
+  },
+  {
+    path: '/pms/:table',
+    name: 'Pms',
+    component: () => import('../pms/PmsView.vue'),
+    meta: { title: 'PMS · Teedy 도입 통합 대시보드', icon: 'fa-table-cells' }
+  },
+  {
     path: '/roadmap',
     name: 'Roadmap',
     component: () => import('../views/RoadmapView.vue'),

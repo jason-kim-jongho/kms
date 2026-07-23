@@ -30,7 +30,22 @@ public class Project {
     private LocalDate endDate;
 
     @Column(nullable = false, length = 20)
-    private String status = "in_progress";
+    private String status = "planning"; // planning | active | on_hold | completed | cancelled
+
+    @Column(nullable = false, length = 10)
+    private String priority = "p2"; // p0 | p1 | p2 | p3
+
+    @Column(length = 100)
+    private String owner;
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+
+    @Column(name = "progress_pct", nullable = false)
+    private Integer progressPct = 0;
+
+    @Column(name = "ai_status_summary", columnDefinition = "TEXT")
+    private String aiStatusSummary;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

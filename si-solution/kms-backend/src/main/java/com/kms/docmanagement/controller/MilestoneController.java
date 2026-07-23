@@ -47,11 +47,14 @@ public class MilestoneController {
     public ApiResponse<Milestone> update(@PathVariable Long id, @RequestBody Milestone payload) {
         Milestone m = milestoneRepository.findById(id).orElseThrow();
         m.setTitle(payload.getTitle());
+        m.setName(payload.getName());
         m.setDescription(payload.getDescription());
         m.setStartDate(payload.getStartDate());
         m.setEndDate(payload.getEndDate());
+        m.setTargetDate(payload.getTargetDate());
         m.setStatus(payload.getStatus());
         m.setProgress(payload.getProgress());
+        m.setNotes(payload.getNotes());
         return ApiResponse.ok(milestoneRepository.save(m));
     }
 

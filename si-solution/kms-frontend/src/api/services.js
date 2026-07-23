@@ -14,7 +14,9 @@ export const documentsDashboardApi = {
 export const projectApi = {
   list: () => apiClient.get('/api/projects').then(unwrap),
   get: (id) => apiClient.get(`/api/projects/${id}`).then(unwrap),
-  update: (id, data) => apiClient.put(`/api/projects/${id}`, data).then(unwrap)
+  create: (data) => apiClient.post('/api/projects', data).then(unwrap),
+  update: (id, data) => apiClient.put(`/api/projects/${id}`, data).then(unwrap),
+  remove: (id) => apiClient.delete(`/api/projects/${id}`).then(unwrap)
 }
 
 export const milestoneApi = {
@@ -77,6 +79,20 @@ export const sapLinkApi = {
 
 export const sapLookupApi = {
   lookup: (table, docNum) => apiClient.get('/api/sap/lookup', { params: { table, doc_num: docNum } }).then(unwrap)
+}
+
+export const riskApi = {
+  list: () => apiClient.get('/api/risks').then(unwrap),
+  create: (data) => apiClient.post('/api/risks', data).then(unwrap),
+  update: (id, data) => apiClient.put(`/api/risks/${id}`, data).then(unwrap),
+  remove: (id) => apiClient.delete(`/api/risks/${id}`).then(unwrap)
+}
+
+export const caseStudyApi = {
+  list: () => apiClient.get('/api/case-studies').then(unwrap),
+  create: (data) => apiClient.post('/api/case-studies', data).then(unwrap),
+  update: (id, data) => apiClient.put(`/api/case-studies/${id}`, data).then(unwrap),
+  remove: (id) => apiClient.delete(`/api/case-studies/${id}`).then(unwrap)
 }
 
 export const certificationApi = {
