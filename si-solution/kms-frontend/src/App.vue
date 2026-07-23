@@ -3,7 +3,10 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const sidebarOpen = ref(true)
+// 데스크탑에서 사이드바 접기/펼치기
+const sidebarCollapsed = ref(false)
+// 모바일에서 사이드바(드로어) 열림 여부
+const mobileMenuOpen = ref(false)
 
 const navGroups = [
   {
@@ -38,58 +41,83 @@ const navGroups = [
     ]
   }
 ]
+
+// 라우트 이동 시 모바일 드로어는 자동으로 닫는다
+function onNavClick() {
+  mobileMenuOpen.value = false
+}
 </script>
 
 <template>
   <div class="flex min-h-screen bg-gray-100">
-    <!-- Sidebar -->
+    <!-- 모바일 전용 배경 오버레이 (사이드바 드로어 열렸을 때만) -->
+    <div
+      v-if="mobileMenuOpen"
+      @click="mobileMenuOpen = false"
+      class="fixed inset-0 bg-black/50 z-30 md:hidden"
+    ></div>
+
+    <!-- Sidebar: 모바일=드로어(overlay), 데스크탑=고정(접기/펼치기) -->
     <aside
-      class="bg-slate-900 text-slate-200 transition-all duration-200 flex flex-col"
-      :class="sidebarOpen ? 'w-64' : 'w-16'"
+      class="bg-slate-900 text-slate-200 flex flex-col fixed md:static inset-y-0 left-0 z-40 w-72 transition-transform duration-200 md:transition-all"
+      :class="[
+        sidebarCollapsed ? 'md:w-16' : 'md:w-64',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      ]"
     >
-      <div class="flex items-center justify-between px-4 h-16 border-b border-slate-700">
-        <div class="flex items-center gap-2 overflow-hidden">
+      <div class="flex items-center justify-between px-4 h-16 border-b border-slate-700 shrink-0">
+        <div class="flex items-center gap-2 overflow-hidden min-w-0">
           <i class="fas fa-cube text-blue-400 text-xl shrink-0"></i>
-          <span v-if="sidebarOpen" class="font-bold text-white whitespace-nowrap">KMS SI Solution</span>
+          <span v-if="!sidebarCollapsed" class="font-bold text-white whitespace-nowrap truncate">KMS SI Solution</span>
         </div>
-        <button @click="sidebarOpen = !sidebarOpen" class="text-slate-400 hover:text-white shrink-0">
+        <!-- 데스크탑: 접기/펼치기 버튼 -->
+        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden md:inline-flex text-slate-400 hover:text-white shrink-0">
           <i class="fas fa-bars"></i>
+        </button>
+        <!-- 모바일: 드로어 닫기 버튼 -->
+        <button @click="mobileMenuOpen = false" class="md:hidden text-slate-400 hover:text-white shrink-0 text-lg">
+          <i class="fas fa-xmark"></i>
         </button>
       </div>
 
       <nav class="flex-1 overflow-y-auto py-4">
         <div v-for="group in navGroups" :key="group.title" class="mb-4">
-          <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-500 uppercase mb-2">{{ group.title }}</p>
+          <p v-if="!sidebarCollapsed" class="px-4 text-xs font-semibold text-slate-500 uppercase mb-2 truncate">{{ group.title }}</p>
           <router-link
             v-for="item in group.items"
             :key="item.path"
             :to="item.path"
+            @click="onNavClick"
             class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm transition-colors"
             :class="route.path === item.path || route.path.startsWith(item.path + '/')
               ? 'bg-blue-600 text-white'
               : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
           >
             <i :class="['fas', item.icon, 'w-4 text-center shrink-0']"></i>
-            <span v-if="sidebarOpen" class="whitespace-nowrap">{{ item.label }}</span>
+            <span v-if="!sidebarCollapsed" class="whitespace-nowrap truncate">{{ item.label }}</span>
           </router-link>
         </div>
       </nav>
 
-      <div class="px-4 py-3 border-t border-slate-700 text-xs text-slate-500" v-if="sidebarOpen">
+      <div v-if="!sidebarCollapsed" class="px-4 py-3 border-t border-slate-700 text-xs text-slate-500">
         Spring Boot + PostgreSQL + Vue.js<br />On-Premise SI Edition
       </div>
     </aside>
 
     <!-- Main -->
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="h-16 bg-white border-b flex items-center px-6 shadow-sm">
-        <h1 class="text-lg font-semibold text-gray-800">
-          <i :class="['fas', $route.meta.icon, 'text-blue-600 mr-2']"></i>
-          {{ $route.meta.title || 'KMS' }}
+      <header class="h-14 sm:h-16 bg-white border-b flex items-center gap-2 sm:gap-3 px-3 sm:px-6 shadow-sm shrink-0">
+        <!-- 모바일: 사이드바(드로어) 열기 버튼 -->
+        <button @click="mobileMenuOpen = true" class="md:hidden text-slate-500 hover:text-slate-700 text-lg shrink-0 -ml-1 px-1">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="text-base sm:text-lg font-semibold text-gray-800 truncate min-w-0 flex-1">
+          <i :class="['fas', $route.meta.icon, 'text-blue-600 mr-1.5 sm:mr-2']"></i>
+          <span class="truncate">{{ $route.meta.title || 'KMS' }}</span>
         </h1>
       </header>
 
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6">
         <router-view />
       </main>
     </div>

@@ -34,7 +34,7 @@ onMounted(load)
   <LoadingSpinner v-if="loading" />
   <div v-else-if="error" class="p-6 bg-red-50 text-red-600 rounded-xl">{{ error }}</div>
   <div v-else class="space-y-4">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
       <button
         v-for="r in ['all', 'critical', 'high', 'medium', 'low']"
         :key="r"

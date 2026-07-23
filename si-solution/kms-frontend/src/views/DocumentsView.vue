@@ -73,22 +73,22 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center gap-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
       <select v-model="filters.categoryCode" class="border border-slate-200 rounded-lg px-3 py-2 text-sm">
         <option value="">전체 카테고리</option>
         <option v-for="c in categories" :key="c.categoryCode" :value="c.categoryCode">{{ c.categoryName }}</option>
       </select>
-      <input v-model="filters.partnerCode" placeholder="거래처 코드" class="border border-slate-200 rounded-lg px-3 py-2 text-sm w-40" />
-      <input v-model="filters.keyword" placeholder="제목/File No. 검색" class="border border-slate-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
-      <button @click="showCreateModal = true" class="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+      <input v-model="filters.partnerCode" placeholder="거래처 코드" class="border border-slate-200 rounded-lg px-3 py-2 text-sm sm:w-40" />
+      <input v-model="filters.keyword" placeholder="제목/File No. 검색" class="border border-slate-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-0 sm:min-w-[200px]" />
+      <button @click="showCreateModal = true" class="sm:ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 whitespace-nowrap">
         <i class="fas fa-plus mr-1"></i>새 문서 등록
       </button>
     </div>
 
     <LoadingSpinner v-if="loading" />
     <div v-else-if="error" class="p-6 bg-red-50 text-red-600 rounded-xl">{{ error }}</div>
-    <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <table class="w-full text-sm">
+    <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="w-full text-sm min-w-[760px]">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
           <tr>
             <th class="text-left px-4 py-3">제목</th>
@@ -124,8 +124,8 @@ onMounted(() => {
     </div>
 
     <!-- Create Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="showCreateModal = false">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <div v-if="showCreateModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showCreateModal = false">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <h3 class="font-bold text-lg text-slate-800 mb-4">새 문서 등록</h3>
         <div class="space-y-3">
           <input v-model="newDoc.title" placeholder="제목 *" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />

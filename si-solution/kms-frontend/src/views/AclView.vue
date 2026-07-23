@@ -32,8 +32,8 @@ onMounted(load)
 <template>
   <LoadingSpinner v-if="loading" />
   <div v-else-if="error" class="p-6 bg-red-50 text-red-600 rounded-xl">{{ error }}</div>
-  <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <table class="w-full text-sm">
+  <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+    <table class="w-full text-sm min-w-[720px]">
       <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
         <tr>
           <th class="text-left px-4 py-3">그룹/역할</th>

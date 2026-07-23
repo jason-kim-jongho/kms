@@ -82,11 +82,12 @@ async function load() {
   error.value = null
   try {
     data.value = await dashboardApi.get()
+    // loading을 먼저 false로 바꿔 캔버스가 실제로 DOM에 마운트되도록 한 뒤 차트를 그린다.
+    loading.value = false
     await nextTick()
     renderCharts()
   } catch (e) {
     error.value = e?.response?.data?.message || e.message || '대시보드 로딩 실패'
-  } finally {
     loading.value = false
   }
 }
@@ -127,14 +128,14 @@ onMounted(load)
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-calendar-days mr-2 text-blue-600"></i>3개월 로드맵 진행률</h2>
         <div class="space-y-4">
           <div v-for="m in data.project.milestones" :key="m.id">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-semibold text-slate-700">{{ m.monthNo }}개월차: {{ m.title.split(':')[1]?.trim() || m.title }}</span>
-              <span class="text-xs font-bold text-slate-500">{{ fmtPct(m.progress) }}</span>
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="text-sm font-semibold text-slate-700 truncate min-w-0">{{ m.monthNo }}개월차: {{ m.title.split(':')[1]?.trim() || m.title }}</span>
+              <span class="text-xs font-bold text-slate-500 shrink-0">{{ fmtPct(m.progress) }}</span>
             </div>
             <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
               <div class="h-full rounded-full" :style="{ width: `${m.progress}%`, background: m.status === 'completed' ? '#22c55e' : m.status === 'in_progress' ? '#3b82f6' : '#94a3b8' }"></div>
             </div>
-            <div class="flex items-center gap-2 mt-1.5">
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
               <StatusBadge :status="m.status" />
               <span class="text-[11px] text-slate-400">{{ m.startDate }} ~ {{ m.endDate }}</span>
             </div>
@@ -146,12 +147,12 @@ onMounted(load)
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-triangle-exclamation mr-2 text-red-600"></i>위험 모듈</h2>
         <div v-if="(data.risk.modules || []).length" class="space-y-3">
           <div v-for="m in data.risk.modules" :key="m.id" class="p-3 rounded-xl border border-slate-100 bg-slate-50">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-semibold text-slate-700">{{ m.name }}</span>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-sm font-semibold text-slate-700 truncate min-w-0">{{ m.name }}</span>
               <StatusBadge :status="m.riskLevel" />
             </div>
             <p class="text-xs text-slate-500 mt-1">{{ m.riskNote || '' }}</p>
-            <div class="flex items-center gap-2 mt-2">
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
               <StatusBadge :status="m.status" />
               <span class="text-[11px] text-slate-400">{{ m.owner || '' }}</span>
             </div>
@@ -162,28 +163,28 @@ onMounted(load)
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-arrows-left-right mr-2 text-purple-600"></i>매핑 완성도 (문서유형별)</h2>
-        <div style="height: 220px;"><canvas ref="mappingCanvas"></canvas></div>
+        <div class="relative h-[180px] sm:h-[220px]"><canvas ref="mappingCanvas"></canvas></div>
       </section>
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-shield-halved mr-2 text-green-600"></i>ACL 커버리지 (그룹별)</h2>
-        <div style="height: 220px;"><canvas ref="aclCanvas"></canvas></div>
+        <div class="relative h-[180px] sm:h-[220px]"><canvas ref="aclCanvas"></canvas></div>
       </section>
     </div>
 
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
       <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-diagram-project mr-2 text-indigo-600"></i>개발 모듈 리스크 분포</h2>
-      <div style="height: 160px;"><canvas ref="moduleCanvas"></canvas></div>
+      <div class="relative h-[140px] sm:h-[160px]"><canvas ref="moduleCanvas"></canvas></div>
     </section>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-triangle-exclamation mr-2 text-red-600"></i>SAP 미연계(Missing) 문서</h2>
         <div v-if="(data.documents?.missing_documents || []).length" class="space-y-2">
-          <div v-for="d in data.documents.missing_documents" :key="d.id" class="flex items-center justify-between p-3 rounded-xl border border-red-100 bg-red-50">
-            <div>
-              <span class="text-sm font-semibold text-slate-700">{{ d.title }}</span>
+          <div v-for="d in data.documents.missing_documents" :key="d.id" class="flex items-center justify-between gap-2 p-3 rounded-xl border border-red-100 bg-red-50">
+            <div class="min-w-0">
+              <span class="text-sm font-semibold text-slate-700 break-words">{{ d.title }}</span>
               <p class="text-[11px] text-slate-500 mt-0.5">{{ d.business_partner_name || '-' }} · {{ d.sap_table || '' }} {{ d.sap_doc_num || '' }}</p>
             </div>
             <StatusBadge status="missing" />
@@ -194,12 +195,12 @@ onMounted(load)
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <h2 class="font-bold text-slate-800 mb-4"><i class="fas fa-certificate mr-2 text-orange-600"></i>만료 예정 인증서 (90일 이내)</h2>
         <div v-if="(data.documents?.expiring_certifications || []).length" class="space-y-2">
-          <div v-for="c in data.documents.expiring_certifications" :key="c.id" class="flex items-center justify-between p-3 rounded-xl border border-orange-100 bg-orange-50">
-            <div>
-              <span class="text-sm font-semibold text-slate-700">{{ c.cert_type }}</span>
+          <div v-for="c in data.documents.expiring_certifications" :key="c.id" class="flex items-center justify-between gap-2 p-3 rounded-xl border border-orange-100 bg-orange-50">
+            <div class="min-w-0">
+              <span class="text-sm font-semibold text-slate-700 break-words">{{ c.cert_type }}</span>
               <p class="text-[11px] text-slate-500 mt-0.5">{{ c.business_partner_name || '-' }} · 만료일 {{ c.expiry_date }}</p>
             </div>
-            <span :class="['text-xs font-bold', daysUntil(c.expiry_date) <= 0 ? 'text-red-600' : 'text-orange-600']">
+            <span :class="['text-xs font-bold shrink-0', daysUntil(c.expiry_date) <= 0 ? 'text-red-600' : 'text-orange-600']">
               {{ daysUntil(c.expiry_date) <= 0 ? '만료됨' : `D-${daysUntil(c.expiry_date)}` }}
             </span>
           </div>

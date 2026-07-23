@@ -63,10 +63,10 @@ onMounted(load)
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <input v-model="partnerCode" placeholder="거래처 코드로 필터" class="border border-slate-200 rounded-lg px-3 py-2 text-sm w-48" @keyup.enter="load" />
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <input v-model="partnerCode" placeholder="거래처 코드로 필터" class="border border-slate-200 rounded-lg px-3 py-2 text-sm sm:w-48" @keyup.enter="load" />
       <button @click="load" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm hover:bg-slate-200">필터</button>
-      <button @click="showModal = true" class="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+      <button @click="showModal = true" class="sm:ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 whitespace-nowrap">
         <i class="fas fa-plus mr-1"></i>인증서 등록
       </button>
     </div>
@@ -94,8 +94,8 @@ onMounted(load)
       <p v-if="!certs.length" class="text-sm text-slate-400 col-span-full text-center py-10">등록된 인증서가 없습니다.</p>
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="showModal = false">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showModal = false">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <h3 class="font-bold text-lg text-slate-800 mb-4">인증서 등록</h3>
         <div class="space-y-3">
           <input v-model="newCert.certType" placeholder="인증서 종류 (예: ISO9001) *" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />

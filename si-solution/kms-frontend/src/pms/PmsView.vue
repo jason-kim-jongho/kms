@@ -95,8 +95,8 @@ const initialValuesForModal = computed(() => {
 </script>
 
 <template>
-  <div class="flex gap-5 h-full">
-    <!-- 좌측 테이블 목록 사이드바 -->
+  <div class="flex flex-col md:flex-row gap-4 md:gap-5 h-full">
+    <!-- 좌측 테이블 목록 사이드바 (데스크탑 전용) -->
     <aside class="w-56 flex-shrink-0 hidden md:block">
       <div class="bg-white rounded-2xl border border-slate-200 p-3 sticky top-6">
         <p class="text-xs font-semibold text-slate-400 uppercase px-2 mb-2">대시보드</p>
@@ -136,15 +136,29 @@ const initialValuesForModal = computed(() => {
 
     <!-- 메인 콘텐츠 -->
     <div class="flex-1 min-w-0 space-y-4">
+      <!-- 모바일 전용: 테이블 선택 드롭다운 (좌측 사이드바 대체) -->
+      <div class="md:hidden">
+        <select
+          :value="activeTable"
+          @change="goTable($event.target.value)"
+          data-testid="pms-mobile-table-select"
+          class="w-full px-3 py-2.5 text-sm font-medium border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+          <option v-for="key in TABLE_ORDER" :key="key" :value="key">
+            {{ TABLES[key].label }} ({{ recordsOf(key).length || 0 }})
+          </option>
+        </select>
+      </div>
+
       <!-- 뷰 전환 탭 -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+      <div class="flex items-center gap-2 flex-wrap justify-between">
+        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 overflow-x-auto max-w-full">
           <button
             v-for="v in VIEW_TYPES"
             :key="v.key"
             :data-testid="`pms-view-tab-${v.key}`"
             @click="activeView = v.key"
-            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+            class="px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeView === v.key ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50'"
           >
             <i :class="['fas', v.icon]"></i>
@@ -154,9 +168,9 @@ const initialValuesForModal = computed(() => {
 
         <button
           @click="openCreate()"
-          class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5"
+          class="px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5 shrink-0"
         >
-          <i class="fas fa-plus"></i> 새 레코드
+          <i class="fas fa-plus"></i> <span class="hidden xs:inline sm:inline">새 레코드</span>
         </button>
       </div>
 

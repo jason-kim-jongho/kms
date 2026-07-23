@@ -64,14 +64,14 @@ const sortableFields = computed(() =>
     </button>
 
     <!-- 검색 -->
-    <div class="relative ml-auto">
+    <div class="relative w-full sm:w-auto sm:ml-auto">
       <i class="fas fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
       <input
         :value="search"
         @input="$emit('update:search', $event.target.value)"
         type="text"
         placeholder="검색..."
-        class="pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg w-40 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+        class="pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg w-full sm:w-40 focus:ring-2 focus:ring-blue-300 focus:outline-none"
       />
     </div>
   </div>
