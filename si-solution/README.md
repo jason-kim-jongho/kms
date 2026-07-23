@@ -67,6 +67,23 @@
 - 기존 **projects**, **milestones** 테이블에 `priority`, `owner`, `target_date`, `progress_pct`,
   `ai_status_summary`(projects) / `name`, `target_date`, `notes`(milestones) 컬럼을 V7 마이그레이션으로 추가
 
+## ERD 및 DB 스키마
+
+전체 17개 테이블의 ERD(개체관계도)와 PostgreSQL 생성 스크립트는 `kms-backend/docs/`에 있습니다.
+
+- `kms-backend/docs/ERD.png` — 전체 스키마 ERD 다이어그램(PK/FK/컬럼타입 포함)
+- `kms-backend/docs/erd.mmd` — 위 ERD의 Mermaid 소스(텍스트로 편집 가능)
+- `kms-backend/docs/create_database.sql` — 역할/DB 생성부터 17개 테이블·인덱스·FK·데모 계정 seed까지
+  포함한 독립 실행형 PostgreSQL 스크립트 (`psql -f create_database.sql`로 신규 서버에 바로 적용 가능)
+
+### 테이블 그룹
+| 그룹 | 테이블 |
+|---|---|
+| 로그인/ACL | `users`, `user_sessions`, `page_permissions` |
+| PMS(다중 뷰 프로젝트관리) | `projects`, `milestones`, `tasks`, `dev_modules`, `sap_teedy_mapping`, `acl_design`, `risks`, `case_studies` |
+| DMS(문서관리) | `document_categories`, `documents`, `document_files`, `document_access_logs`, `sap_document_links`, `certifications` |
+| 시스템 | `flyway_schema_history` (Flyway 자체 관리 테이블, `create_database.sql`에는 미포함 — 애플리케이션이 자동 생성) |
+
 ### 프론트엔드 구조 (`kms-frontend/src/pms/`)
 - `tableMeta.js`: 8개 테이블의 필드 스키마(타입/옵션/linkedTable) 선언적 레지스트리
 - `usePmsData.js` / `usePmsFilter.js`: 전역 reactive 캐시 + 검색/필터/정렬 composable

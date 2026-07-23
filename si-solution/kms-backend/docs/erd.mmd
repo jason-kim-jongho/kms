@@ -1,0 +1,269 @@
+erDiagram
+    USERS {
+        bigint id PK
+        varchar_50 username UK
+        varchar_200 password_hash
+        varchar_100 display_name
+        varchar_150 email
+        varchar_20 role
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USER_SESSIONS {
+        bigint id PK
+        varchar_200 token UK
+        varchar_50 username FK
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    PAGE_PERMISSIONS {
+        bigint id PK
+        varchar_50 username FK
+        varchar_50 page_key
+        boolean allowed
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PROJECTS {
+        bigint id PK
+        varchar_200 name
+        text description
+        date start_date
+        date end_date
+        varchar_20 status
+        varchar_10 priority
+        varchar_100 owner
+        date target_date
+        int progress_pct
+        text ai_status_summary
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    MILESTONES {
+        bigint id PK
+        bigint project_id FK
+        int month_no
+        varchar_300 title
+        text description
+        date start_date
+        date end_date
+        varchar_20 status
+        int progress
+        varchar_300 name
+        date target_date
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TASKS {
+        bigint id PK
+        bigint milestone_id FK
+        varchar_300 title
+        text description
+        varchar_100 owner
+        varchar_20 status
+        varchar_20 priority
+        date start_date
+        date due_date
+        int progress
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DEV_MODULES {
+        bigint id PK
+        bigint project_id FK
+        bigint target_milestone_id FK
+        varchar_100 module_key UK
+        varchar_200 name
+        text description
+        varchar_50 category
+        varchar_20 status
+        varchar_20 risk_level
+        text risk_note
+        int progress
+        varchar_100 owner
+        int planned_month
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SAP_TEEDY_MAPPING {
+        bigint id PK
+        bigint project_id FK
+        varchar_50 sap_table
+        varchar_100 sap_field
+        varchar_300 sap_field_desc
+        varchar_100 teedy_metadata_name
+        varchar_20 teedy_metadata_type
+        varchar_100 doc_type
+        varchar_500 unc_path_pattern
+        varchar_20 mapping_status
+        boolean is_required
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ACL_DESIGN {
+        bigint id PK
+        bigint project_id FK
+        varchar_100 group_name
+        varchar_50 role_name
+        varchar_100 doc_type
+        boolean permission_read
+        boolean permission_write
+        boolean permission_delete
+        boolean permission_share
+        varchar_300 scope_note
+        varchar_20 status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    RISKS {
+        bigint id PK
+        bigint project_id FK
+        varchar_300 name
+        text description
+        varchar_50 category
+        varchar_20 severity
+        varchar_20 probability
+        varchar_20 status
+        varchar_100 owner
+        date due_date
+        text mitigation
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CASE_STUDIES {
+        bigint id PK
+        bigint project_id FK
+        varchar_300 title
+        varchar_50 category
+        text summary
+        text outcome
+        varchar_20 status
+        varchar_100 owner
+        date published_date
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DOCUMENT_CATEGORIES {
+        bigint id PK
+        varchar_50 category_code UK
+        varchar_100 category_name
+        varchar_50 parent_code
+        boolean requires_sap_link
+        int retention_years
+        text description
+        int sort_order
+        varchar_1 use_yn
+        timestamp created_at
+    }
+
+    DOCUMENTS {
+        bigint id PK
+        varchar_16 storage_id UK
+        varchar_300 title
+        varchar_50 category_code FK
+        varchar_100 doc_type
+        varchar_50 business_partner_code
+        varchar_200 business_partner_name
+        varchar_100 file_no
+        varchar_500 unc_path_ref
+        varchar_20 status
+        text remark
+        varchar_50 post_user_id
+        varchar_100 post_user_name
+        timestamp post_date
+        varchar_20 company_code
+        varchar_1 use_yn
+        timestamp deleted_at
+        varchar_50 deleted_by
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DOCUMENT_FILES {
+        bigint id PK
+        varchar_16 storage_id FK
+        int file_index
+        varchar_300 file_name
+        varchar_300 original_file_name
+        varchar_1000 storage_path
+        varchar_20 file_type
+        varchar_150 mime_type
+        bigint file_size
+        varchar_50 post_user_id
+        varchar_100 post_user_name
+        timestamp post_date
+        varchar_1 use_yn
+        timestamp deleted_at
+        varchar_50 deleted_by
+    }
+
+    DOCUMENT_ACCESS_LOGS {
+        bigint id PK
+        bigint document_id FK
+        varchar_20 action
+        varchar_50 actor_id
+        varchar_100 actor_name
+        varchar_100 actor_group
+        varchar_50 ip_address
+        timestamp action_at
+    }
+
+    SAP_DOCUMENT_LINKS {
+        bigint id PK
+        bigint document_id FK
+        varchar_20 sap_table
+        varchar_50 sap_doc_entry
+        varchar_50 sap_doc_num
+        varchar_50 sap_card_code
+        varchar_20 link_status
+        varchar_50 linked_by
+        timestamp linked_at
+        text notes
+    }
+
+    CERTIFICATIONS {
+        bigint id PK
+        bigint document_id FK
+        varchar_100 cert_type
+        varchar_50 business_partner_code
+        varchar_200 business_partner_name
+        date issue_date
+        date expiry_date
+        text remark
+        varchar_20 status
+        varchar_100 submitted_by
+        timestamp submitted_at
+        varchar_1 use_yn
+    }
+
+    USERS ||--o{ USER_SESSIONS : "로그인 세션 보유"
+    USERS ||--o{ PAGE_PERMISSIONS : "페이지별 권한 보유"
+
+    PROJECTS ||--o{ MILESTONES : "포함"
+    MILESTONES ||--o{ TASKS : "포함"
+    PROJECTS ||--o{ DEV_MODULES : "포함"
+    MILESTONES ||--o{ DEV_MODULES : "목표 마일스톤"
+    PROJECTS ||--o{ SAP_TEEDY_MAPPING : "포함"
+    PROJECTS ||--o{ ACL_DESIGN : "포함"
+    PROJECTS ||--o{ RISKS : "포함"
+    PROJECTS ||--o{ CASE_STUDIES : "포함"
+
+    DOCUMENT_CATEGORIES ||--o{ DOCUMENTS : "분류"
+    DOCUMENTS ||--o{ DOCUMENT_FILES : "첨부파일"
+    DOCUMENTS ||--o{ DOCUMENT_ACCESS_LOGS : "접근로그"
+    DOCUMENTS ||--o{ SAP_DOCUMENT_LINKS : "SAP전표연계"
+    DOCUMENTS ||--o{ CERTIFICATIONS : "인증서"
