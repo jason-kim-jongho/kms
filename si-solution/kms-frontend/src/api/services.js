@@ -3,6 +3,26 @@ import apiClient from './client'
 // 공통 헬퍼: ApiResponse.data 추출
 const unwrap = (res) => res.data.data
 
+export const authApi = {
+  login: (data) => apiClient.post('/api/auth/login', data).then(unwrap),
+  logout: () => apiClient.post('/api/auth/logout').then(unwrap),
+  me: () => apiClient.get('/api/auth/me').then(unwrap)
+}
+
+export const userApi = {
+  list: () => apiClient.get('/api/users').then(unwrap),
+  create: (data) => apiClient.post('/api/users', data).then(unwrap),
+  update: (id, data) => apiClient.put(`/api/users/${id}`, data).then(unwrap),
+  remove: (id) => apiClient.delete(`/api/users/${id}`).then(unwrap)
+}
+
+export const pagePermissionApi = {
+  pageCatalog: () => apiClient.get('/api/page-catalog').then(unwrap),
+  list: (username) => apiClient.get('/api/page-permissions', { params: username ? { username } : {} }).then(unwrap),
+  upsert: (data) => apiClient.put('/api/page-permissions', data).then(unwrap),
+  remove: (id) => apiClient.delete(`/api/page-permissions/${id}`).then(unwrap)
+}
+
 export const dashboardApi = {
   get: () => apiClient.get('/api/dashboard').then(unwrap)
 }

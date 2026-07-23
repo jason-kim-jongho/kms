@@ -1,20 +1,50 @@
-# KMS SI Solution — Spring Boot + PostgreSQL + Vue.js
+# 미래지기 PMS — Spring Boot + PostgreSQL + Vue.js
 
 ## 프로젝트 개요
-- **이름**: KMS (SAP B1 연계 문서관리시스템) — On-Premise SI Edition
+- **이름**: 미래지기 PMS (구 KMS SI Solution, SAP B1 연계 문서관리시스템) — On-Premise SI Edition
 - **목적**: `/home/user/webapp`의 Cloudflare Workers(Hono + D1 + R2) 기반 솔루션과 **동일한 기능**을
   일반적인 사내(On-Premise) SI 구축 방식으로 재구현한 버전입니다.
   클라우드 서버리스가 아닌, 전통적인 3-tier(프론트엔드 / 백엔드 서버 / DB 서버) 아키텍처로
   사내 서버·VM에 직접 설치하여 운영하는 것을 전제로 합니다.
 - **핵심 기능**:
-  1. 3개월 프로젝트 로드맵(마일스톤/태스크) 관리
-  2. 개발모듈 백로그 및 리스크 관리
-  3. SAP B1 ↔ KMS 메타데이터 매핑 관리
-  4. 문서유형별 권한(ACL) 설계 관리
-  5. 문서관리시스템(DMS): 문서 등록/파일 업로드·다운로드/SAP 전표 연계/인증서 관리
-  6. **PMS(다중 뷰 프로젝트관리, `/pms/*`)**: Notion/Airtable 스타일의 테이블/칸반/갤러리/캘린더/리스트
+  1. **로그인 인증 + 사용자 권한관리(ACL)**: opaque 토큰 기반 로그인, 페이지별·사용자ID별
+     화이트리스트 방식 접근 제어(관리자 화면에서 실시간 설정)
+  2. 3개월 프로젝트 로드맵(마일스톤/태스크) 관리
+  3. 개발모듈 백로그 및 리스크 관리
+  4. SAP B1 ↔ KMS 메타데이터 매핑 관리
+  5. 문서유형별 권한(ACL) 설계 관리
+  6. 문서관리시스템(DMS): 문서 등록/파일 업로드·다운로드/SAP 전표 연계/인증서 관리
+  7. **PMS(다중 뷰 프로젝트관리, `/pms/*`)**: Notion/Airtable 스타일의 테이블/칸반/갤러리/캘린더/리스트
      5가지 뷰를 전환하며 8개 테이블(projects, milestones, tasks, dev_modules,
      sap_teedy_mapping, acl_design, risks, case_studies)을 관리하는 통합 데이터베이스 UI
+
+## 로그인 & 사용자 권한관리(ACL)
+
+### 로그인
+- 로그인 화면(`/login`)에서 아이디/비밀번호를 입력하거나, 데모 계정 버튼(admin/manager/viewer)으로 바로 로그인할 수 있습니다.
+- 로그인 성공 시 서버가 발급하는 opaque 토큰(SecureRandom 32byte, Base64 URL-safe, 12시간 TTL)이
+  브라우저 `localStorage`(`miraejigi_auth`)에 저장되고, 이후 모든 API 요청의 `Authorization: Bearer <token>` 헤더로 자동 첨부됩니다.
+- 토큰이 없거나 만료된 상태로 보호된 페이지에 접근하면 `/login?next=원래경로`로 리다이렉트됩니다.
+
+### 데모 계정 (seed 데이터, V8 마이그레이션)
+| 아이디 | 비밀번호 | 역할 | 접근 가능 페이지 |
+|---|---|---|
+| `admin` | `admin123` | ADMIN | 전체 페이지(제한 없음, 시스템관리 메뉴 포함) |
+| `manager` | `manager123` | USER | 대시보드, PMS, 로드맵, 개발모듈, 매핑, 문서관리 |
+| `viewer` | `viewer123` | USER | 대시보드, PMS, 문서관리 |
+
+> ⚠️ 운영 배포 전 반드시 위 데모 계정의 비밀번호를 변경하거나 계정을 삭제하세요.
+
+### ACL(페이지별 · 사용자ID별 권한) 동작 방식
+- **역할(role)**: `ADMIN` 또는 `USER`. `ADMIN`은 `page_permissions` 테이블과 무관하게 항상 모든 페이지에 접근 가능합니다.
+- **`USER` 역할**: `page_permissions` 테이블에 `(username, page_key, allowed)` 화이트리스트로 등록된 페이지만 접근 가능합니다(등록 안 된 페이지는 기본 차단).
+- **9개 page_key**: `dashboard`, `pms`, `roadmap`, `dev-modules`, `mapping`, `acl`, `documents`, `sap-lookup`, `certifications`
+- **이중 검증**: 프론트엔드 라우터 가드(Vue Router `beforeEach`)가 UX 차원에서 즉시 리다이렉트하고,
+  백엔드 `PagePermissionFilter`가 API 경로→page_key 매핑을 통해 서버사이드로도 동일하게 강제합니다(우회 불가).
+- **관리자 화면**:
+  - `/admin/users` — 사용자 생성/수정/삭제, 활성화 여부, 역할(ADMIN/USER) 지정
+  - `/admin/page-permissions` — 사용자(행) × 페이지(열) 매트릭스에서 셀을 클릭하면 즉시 서버에 반영되는 실시간 토글 UI
+- 위 2개 관리자 화면은 `ADMIN` 역할만 접근 가능합니다(라우터 가드 `meta.adminOnly` + 백엔드 `hasRole("ADMIN")`).
 
 ## PMS (다중 뷰 프로젝트관리) 상세
 
@@ -55,6 +85,7 @@
 | 파일 저장소 | Cloudflare R2 | **로컬 파일시스템** (`kms.storage.root`) |
 | 프론트엔드 | Vanilla JS + Tailwind CDN | **Vue.js 3** (Vite + Vue Router + Pinia) |
 | 배포 형태 | 서버리스(Cloudflare Pages) | **온프레미스 서버 상주 프로세스** (JVM + Node/정적빌드) |
+| 인증/인가 | 없음(공개) | **Opaque 토큰 로그인 + 페이지별 ACL** (Spring Security 커스텀 필터) |
 
 ## 디렉터리 구조
 ```
@@ -63,21 +94,25 @@ si-solution/
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/com/kms/docmanagement/
-│       │   ├── entity/          # JPA 엔티티 12종
-│       │   ├── repository/      # Spring Data JPA 리포지토리 12종
-│       │   ├── controller/      # REST 컨트롤러 12종
-│       │   ├── service/         # FileStorageService (로컬 파일 저장)
-│       │   ├── config/          # WebConfig(CORS), SecurityConfig
-│       │   └── dto/             # ApiResponse
+│       │   ├── entity/          # JPA 엔티티 15종 (User/UserSession/PagePermission 포함)
+│       │   ├── repository/      # Spring Data JPA 리포지토리 15종
+│       │   ├── controller/      # REST 컨트롤러 15종 (Auth/User/PagePermission 포함)
+│       │   ├── service/         # FileStorageService, AuthService(로그인/토큰/권한 resolve)
+│       │   ├── security/        # AuthenticatedUser, PageCatalog, TokenAuthenticationFilter,
+│       │   │                    #   PagePermissionFilter (ACL 서버사이드 강제)
+│       │   ├── config/          # WebConfig(CORS), SecurityConfig, GlobalExceptionHandler
+│       │   └── dto/             # ApiResponse, LoginRequest/Response, UserDto, ...
 │       └── resources/
 │           ├── application.properties
-│           └── db/migration/    # Flyway 마이그레이션 V1~V6
+│           └── db/migration/    # Flyway 마이그레이션 V1~V8
 ├── kms-frontend/                # Vue.js 3 프론트엔드
 │   └── src/
-│       ├── views/                # 9개 화면
+│       ├── views/                # 10개 화면 (LoginView 포함)
+│       ├── views/admin/          # UserManagementView, PagePermissionView (관리자 전용)
 │       ├── components/           # 공용 컴포넌트
-│       ├── api/                  # axios 기반 API 클라이언트
-│       └── router/
+│       ├── stores/               # Pinia authStore (토큰/역할/접근가능페이지, localStorage 영속화)
+│       ├── api/                  # axios 기반 API 클라이언트(토큰 인터셉터 포함)
+│       └── router/               # beforeEach 가드(public/adminOnly/pageKey)
 ├── kms-storage/                 # 업로드 파일 저장 루트 (런타임 생성)
 └── ecosystem.config.cjs         # PM2 프로세스 관리 설정
 ```
@@ -120,8 +155,9 @@ mvn compile               # 최초 컴파일(온라인, 의존성 다운로드)
 mvn spring-boot:run       # 실행 시 Flyway가 V1~V6 마이그레이션을 자동 적용
 ```
 Flyway는 `spring.flyway.enabled=true` 설정에 따라 기동 시 자동으로
-`db/migration/` 하위 `V1__initial_schema.sql` ~ `V6__fix_use_yn_column_type.sql`을
-순서대로 적용합니다. 최초 실행 시 로드맵/개발모듈/문서관리 예시(seed) 데이터도 함께 삽입됩니다.
+`db/migration/` 하위 `V1__initial_schema.sql` ~ `V8__auth_and_page_permissions.sql`을
+순서대로 적용합니다. 최초 실행 시 로드맵/개발모듈/문서관리 예시(seed) 데이터와
+admin/manager/viewer 데모 계정 + 초기 페이지권한도 함께 삽입됩니다.
 
 ### 서버 정보
 - 포트: `8080` (기본값, `server.port`로 변경 가능)
@@ -194,6 +230,16 @@ pm2 list
 | 리스크(PMS) | `GET/POST/PUT/DELETE /api/risks[/{id}]` | 프로젝트 리스크 CRUD |
 | 사례(PMS) | `GET/POST/PUT/DELETE /api/case-studies[/{id}]` | 도입 사례/성과 CRUD |
 | 프로젝트(PMS 확장) | `POST/DELETE /api/projects[/{id}]` | 프로젝트 생성/삭제 (기존 GET/PUT에 추가) |
+| 인증 | `POST /api/auth/login` | 로그인 (username/password → 토큰+접근가능페이지 목록 발급) |
+| 인증 | `POST /api/auth/logout` | 로그아웃 (토큰 무효화) |
+| 인증 | `GET /api/auth/me` | 현재 로그인 사용자 정보 조회 |
+| 사용자관리 (ADMIN 전용) | `GET/POST/PUT/DELETE /api/users[/{id}]` | 사용자 계정 CRUD |
+| 페이지권한 (ADMIN 전용) | `GET /api/page-catalog` | 전체 page_key 목록(9종) 조회 |
+| 페이지권한 (ADMIN 전용) | `GET/PUT /api/page-permissions` | 사용자별 페이지 접근권한 조회/설정(upsert) |
+| 페이지권한 (ADMIN 전용) | `DELETE /api/page-permissions/{id}` | 페이지 접근권한 삭제 |
+
+> `/api/auth/**`를 제외한 모든 API는 `Authorization: Bearer <token>` 헤더가 필요합니다.
+> `/api/users/**`, `/api/page-permissions/**`, `/api/page-catalog`는 `ADMIN` 역할만 호출 가능합니다.
 
 ## SAP B1 연동 지점 (운영 전환 시 필수 작업)
 `SapLookupController.lookup()` 메서드는 현재 **Mock 데이터**를 반환합니다.
@@ -210,17 +256,29 @@ pm2 list
 - **Vite 403 Blocked request**: 샌드박스 공개 URL 접속 시 Vite의 `allowedHosts` 기본 보안
   정책에 의해 차단됨 → `vite.config.js`에서 `server.allowedHosts: true`로 해결.
   실제 운영 서버에서는 보안을 위해 `true` 대신 구체적인 도메인 목록을 명시하는 것을 권장합니다.
+- **CORS Preflight(OPTIONS) 차단**: Spring Security의 `anyRequest().authenticated()` 정책이
+  브라우저의 OPTIONS preflight 요청까지 인증 대상으로 처리해 CORS 헤더가 세팅되기 전에
+  401/403이 반환되는 문제 → `SecurityConfig`에 `.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()`
+  추가로 해결.
+- **로그인 실패 시 빈 에러 응답**: `GlobalExceptionHandler`가 없어 `AuthService`의
+  `IllegalArgumentException`이 처리되지 않고 빈 body로 응답되던 문제 → `GlobalExceptionHandler` 추가로
+  `ApiResponse.error()` 형식의 명확한 에러 메시지 반환.
 
 ## 향후 개선 과제 (미구현)
-- Spring Security를 실제 JWT/사내 SSO 인증으로 전환 (현재는 `permitAll()` 개방 상태)
+- 현재 인증은 opaque 토큰(자체 구현) 방식이며, 필요 시 실제 사내 SSO(LDAP/AD, SAML, OAuth2) 연동으로 전환 가능
 - SAP B1 Service Layer 실제 연동 (현재 Mock)
 - 프론트엔드 운영 빌드(`npm run build`)를 백엔드 정적 리소스 또는 Nginx로 서빙하는 배포 파이프라인 구성
 - 파일 저장소를 NAS/공유폴더(UNC 경로) 또는 별도 파일서버로 이전 (현재는 로컬 디스크)
 - 감사로그(document_access_logs) 조회 API 및 화면 추가
+- 만료된 세션 토큰 자동 정리(scheduled cleanup job) 추가
 
 ## 최종 검증 상태 (2026-07-23 기준)
-- Flyway 마이그레이션 V1~V7 전체 적용 완료 (V7: PMS용 projects/milestones 컬럼 보강 + risks/case_studies 신규)
-- REST API 전체 엔드포인트 curl 검증 완료 (CRUD, 파일 업로드/다운로드, risks/case-studies 포함)
-- Vue.js 프론트엔드 9개 기존 화면 + PMS 모듈(`/pms/*`) Playwright 콘솔 검증 완료 (JS 에러 없음)
+- Flyway 마이그레이션 V1~V8 전체 적용 완료 (V8: users/user_sessions/page_permissions 테이블 + 데모 계정/권한 seed)
+- REST API 전체 엔드포인트 curl 검증 완료 (CRUD, 파일 업로드/다운로드, risks/case-studies, 로그인/로그아웃/사용자관리/페이지권한 포함)
+- Vue.js 프론트엔드 10개 화면(LoginView, 관리자 화면 2종 포함) + PMS 모듈(`/pms/*`) Playwright 콘솔 검증 완료 (JS 에러 없음)
 - PMS 5가지 뷰(테이블/칸반/갤러리/캘린더/리스트) 전환 Playwright 스크린샷 시각 검증 완료
-- 프론트-백엔드 CORS 연동 검증 완료
+- 로그인/ACL Playwright E2E 검증 완료: 비인증 리다이렉트, 로그인 실패 에러표시, admin 전체권한 접근,
+  manager/viewer 역할별 페이지 접근 제한 및 사이드바 메뉴 필터링, 관리자 화면에서 페이지권한 실시간 토글 반영,
+  모바일(375px) 로그인/대시보드/드로어 네비게이션 검증
+- "미래지기 PMS" 로고(컬러/화이트) 및 브랜딩 전체 적용 완료(App.vue, LoginView, index.html title)
+- 프론트-백엔드 CORS 연동 검증 완료(OPTIONS preflight 포함)
